@@ -9,7 +9,7 @@ description = "Canoe's utility subroutines"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
-authors = [{ name = "Cheng Li", email = "you@example.com" }]
+authors = [{ name = "Cheng Li", email = "chengcli@umich.edu" }]
 keywords = []
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -25,7 +25,11 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
 ]
 
-dependencies = []
+dependencies = [
+  "torch>=2.7.0,<=2.7.1",
+  "kintera>=1.0.1",
+  "snapy>=0.7.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -39,4 +43,3 @@ Issues = "https://github.com/chengcli/paddle/issues"
 
 [project.scripts]
 paddle = "paddle.__main__:main"
-
