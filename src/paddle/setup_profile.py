@@ -277,7 +277,4 @@ def setup_profile(
         w[snapy.index.ipr, ..., i] = pres
         w[snapy.index.idn, ..., i] = thermo_x.compute("V->D", [conc])
         w[snapy.index.icy:, ..., i] = thermo_x.compute("X->Y", [xfrac])
-
-    # initialize hydro state
-    block.initialize({"hydro_w": w})
     return w
