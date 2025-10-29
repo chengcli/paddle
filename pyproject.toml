@@ -4,11 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "paddle"
-version = "1.1.1"
+version = "1.1.3"
 description = "Canoe's utility subroutines"
 readme = "README.md"
 requires-python = ">=3.9"
-authors = [{ name = "Cheng Li", email = "chengcli@umich.edu" }]
+authors = [
+  { name = "Cheng Li", email = "chengcli@umich.edu" },
+  { name = "Elijah Mullens", email = "eem85@cornell.edu" },
+]
 keywords = []
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -39,9 +42,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/chengcli/paddle"
-Repository = "https://github.com/chengcli/paddle"
-Issues = "https://github.com/chengcli/paddle/issues"
+Homepage = "https://github.com/elijah-mullens/paddle"
+Repository = "https://github.com/elijah-mullens/paddle"
+Issues = "https://github.com/elijah-mullens/paddle/issues"
 
 [project.scripts]
 paddle = "paddle.__main__:main"
