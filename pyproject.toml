@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "paddle"
 version = "1.1.4"
-description = "Canoe's utility subroutines"
+description = "Python Atmospheric Dynamics: Discovery and Learning about Exoplanets. An open-source, user-friendly python frontend of canoe"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-  { name = "Cheng Li", email = "chengcli@umich.edu" },
   { name = "Elijah Mullens", email = "eem85@cornell.edu" },
+  { name = "Cheng Li", email = "chengcli@umich.edu" },
 ]
 keywords = []
 classifiers = [
