@@ -12,7 +12,8 @@ from kintera import ThermoX
 
 
 def setup_saturn_profile():
-    path = resources.files("paddle") / "data" / "saturn1d.yaml"
+    # path = resources.files("paddle") / "data" / "saturn1d.yaml"
+    path = "data" / "saturn1d.yaml"
     print(f"Reading input file: {path}")
 
     op_block = MeshBlockOptions.from_yaml(str(path))
