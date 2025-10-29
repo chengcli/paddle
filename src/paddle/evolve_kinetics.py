@@ -2,12 +2,14 @@ import torch
 import snapy
 import kintera
 
+
 def evolve_kinetics(
     hydro_w: torch.Tensor,
-    block: snapy.MeshBlock, 
-    kinet: kintera.Kinetics, 
+    block: snapy.MeshBlock,
+    kinet: kintera.Kinetics,
     thermo_x: kintera.ThermoX,
-    dt) -> torch.Tensor:
+    dt,
+) -> torch.Tensor:
     """
     Evolve the chemical kinetics for one time step using implicit method.
 
@@ -26,7 +28,7 @@ def evolve_kinetics(
 
     temp = eos.compute("W->T", (hydro_w,))
     pres = hydro_w[snapy.index.ipr]
-    xfrac = thermo_y.compute("Y->X", (hydro_w[snapy.index.icy:],))
+    xfrac = thermo_y.compute("Y->X", (hydro_w[snapy.index.icy :],))
     conc = thermo_x.compute("TPX->V", (temp, pres, xfrac))
     cp_vol = thermo_x.compute("TV->cp", (temp, conc))
 

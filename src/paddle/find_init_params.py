@@ -4,16 +4,18 @@ import numpy as np
 
 from .setup_profile import setup_profile
 
+
 def find_init_params(
-        block: snapy.MeshBlock,
-        param: dict[str, float],
-        *,
-        target_T: float=300.,
-        target_P: float=1.e5, 
-        method: str="moist-adiabat",
-        max_iter: int=50,
-        ftol: float=1.e-2,
-        verbose: bool=True):
+    block: snapy.MeshBlock,
+    param: dict[str, float],
+    *,
+    target_T: float = 300.0,
+    target_P: float = 1.0e5,
+    method: str = "moist-adiabat",
+    max_iter: int = 50,
+    ftol: float = 1.0e-2,
+    verbose: bool = True,
+):
     """Find initial parameters that yield desired T and P
 
     Args:
@@ -44,14 +46,15 @@ def find_init_params(
         temp = eos.compute("W->T", (w,)).squeeze()
 
         # calculate 1D pressure
-        pres = w[snapy.index.ipr,...].squeeze()
+        pres = w[snapy.index.ipr, ...].squeeze()
 
         # temperature function
         t_func = interp1d(
             pres.log().cpu().numpy(),
             temp.log().cpu().numpy(),
             kind="linear",
-            fill_value="extrapolate")
+            fill_value="extrapolate",
+        )
 
         temp1 = np.exp(t_func(np.log(target_P)))
         if verbose:
@@ -69,4 +72,3 @@ def find_init_params(
         count += 1
 
     raise RuntimeError("Failed to converge within the maximum number of iterations.")
-

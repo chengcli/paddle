@@ -4,20 +4,20 @@ import time
 import kintera
 import numpy as np
 from snapy import (
-        index,
-        MeshBlockOptions,
-        MeshBlock,
-        OutputOptions,
-        NetcdfOutput,
-        )
+    index,
+    MeshBlockOptions,
+    MeshBlock,
+    OutputOptions,
+    NetcdfOutput,
+)
 from kintera import (
-        ThermoOptions,
-        ThermoX,
-        KineticsOptions,
-        Kinetics,
-        )
+    ThermoOptions,
+    ThermoX,
+    KineticsOptions,
+    Kinetics,
+)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # input file
     infile = "earth.yaml"
     device = "cpu"
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     # set up initial condition
     w = setup_initial_condition(block, thermo_x)
-    print("w = ", w[:,0,0,:])
+    print("w = ", w[:, 0, 0, :])
 
     # integration
     current_time = 0.0
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             block.forward(dt, stage)
 
         # evolve kinetics
-        u[index.icy:] += evolve_kinetics(block, kinet, thermo_x)
+        u[index.icy :] += evolve_kinetics(block, kinet, thermo_x)
 
         current_time += dt
         count += 1
