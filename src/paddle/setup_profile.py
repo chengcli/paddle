@@ -4,18 +4,19 @@ import torch
 import snapy
 import kintera
 
+
 def integrate_neutral(
-        thermo_x: kintera.ThermoX,
-        temp: torch.Tensor,
-        pres: torch.Tensor,
-        xfrac: torch.Tensor,
-        grav: float,
-        dz: float,
-        max_iter: int = 100
-        ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    thermo_x: kintera.ThermoX,
+    temp: torch.Tensor,
+    pres: torch.Tensor,
+    xfrac: torch.Tensor,
+    grav: float,
+    dz: float,
+    max_iter: int = 100,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     A neutral density profile assumes no cloud and:
-        
+
         (1) dP/dz = -rho*g
         (2) d(rho)/dz = ...
 
@@ -68,15 +69,16 @@ def integrate_neutral(
 
     return temp2, pres2, xfrac2
 
+
 def integrate_dry_adiabat(
-        thermo_x: kintera.ThermoX,
-        temp: torch.Tensor,
-        pres: torch.Tensor,
-        xfrac: torch.Tensor,
-        grav: float,
-        dz: float,
-        max_iter: int = 100
-        ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    thermo_x: kintera.ThermoX,
+    temp: torch.Tensor,
+    pres: torch.Tensor,
+    xfrac: torch.Tensor,
+    grav: float,
+    dz: float,
+    max_iter: int = 100,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     A dry adiabatic profile assumes no cloud and:
 
@@ -84,12 +86,12 @@ def integrate_dry_adiabat(
         (2) dP/dz = -rho*g
 
     In discretized form:
-    
+
         cp_bar = 0.5 * (cp(T_old) + cp(T_new))
         T_new = T_old - g/bar * dz
         rho_bar = 0.5 * (rho_old + rho_new)
         P_new = P_old - rho_bar * g * dz
-        
+
     """
     conc1 = thermo_x.compute("TPX->V", [temp, pres, xfrac])
     cp1 = thermo_x.compute("TV->cp", [temp, conc1]) / conc1.sum(-1)
@@ -136,11 +138,10 @@ def integrate_dry_adiabat(
 
     return temp2, pres2, xfrac2
 
+
 def setup_profile(
-        block: snapy.MeshBlock,
-        param: dict[str, float] = {},
-        method: str = "moist-adiabat"
-        ) -> torch.Tensor:
+    block: snapy.MeshBlock, param: dict[str, float] = {}, method: str = "moist-adiabat"
+) -> torch.Tensor:
     """
     Set up an adiabatic initial condition for the mesh block.
 
@@ -175,16 +176,16 @@ def setup_profile(
         "moist-adiabat",
         "isothermal",
         "pseudo-adiabat",
-        "neutral"
+        "neutral",
     ]
 
     if method not in valid_methods:
         raise ValueError(f"Invalid method '{method}'. Choose from {valid_methods}.")
 
-    Ts = param.get("Ts", 300.)
-    Ps = param.get("Ps", 1.e5)
+    Ts = param.get("Ts", 300.0)
+    Ps = param.get("Ps", 1.0e5)
     grav = param.get("grav", 9.8)
-    Tmin = param.get("Tmin", 0.)
+    Tmin = param.get("Tmin", 0.0)
 
     # get handles to modules
     coord = block.module("hydro.coord")
@@ -204,8 +205,7 @@ def setup_profile(
     ny = len(thermo_y.options.species()) - 1
     nvar = 5 + ny
 
-    w = torch.zeros((nvar, nc3, nc2, nc1),
-                    dtype=x1v.dtype, device=x1v.device)
+    w = torch.zeros((nvar, nc3, nc2, nc1), dtype=x1v.dtype, device=x1v.device)
 
     temp = Ts * torch.ones((nc3, nc2), dtype=w.dtype, device=w.device)
     pres = Ps * torch.ones((nc3, nc2), dtype=w.dtype, device=w.device)
@@ -216,7 +216,7 @@ def setup_profile(
         xfrac[..., index] = param.get(f"x{name}", 0.0)
 
     # dry air mole fraction
-    xfrac[..., 0] = 1. - xfrac[..., 1:].sum(dim=-1)
+    xfrac[..., 0] = 1.0 - xfrac[..., 1:].sum(dim=-1)
 
     # start and end indices for the vertical direction
     # excluding ghost cells
@@ -227,7 +227,7 @@ def setup_profile(
     dz = coord.buffer("dx1f")[ifirst]
 
     # half a grid to cell center
-    thermo_x.extrapolate_ad(temp, pres, xfrac, grav, dz / 2.);
+    thermo_x.extrapolate_ad(temp, pres, xfrac, grav, dz / 2.0)
 
     # adiabatic extrapolation
     if method == "isothermal":
@@ -245,17 +245,19 @@ def setup_profile(
             xfrac /= xfrac.sum(dim=-1, keepdim=True)
         conc = thermo_x.compute("TPX->V", [temp, pres, xfrac])
 
-        w[snapy.index.ipr, ..., i] = pres;
+        w[snapy.index.ipr, ..., i] = pres
         w[snapy.index.idn, ..., i] = thermo_x.compute("V->D", [conc])
-        w[snapy.index.icy:, ...,i] = thermo_x.compute("X->Y", [xfrac])
+        w[snapy.index.icy :, ..., i] = thermo_x.compute("X->Y", [xfrac])
 
         dz = coord.buffer("dx1f")[i]
         if method.split("-")[0] == "dry":
-            temp, pres, xfrac = integrate_dry_adiabat(thermo_x, temp, pres, xfrac, grav, dz);
+            temp, pres, xfrac = integrate_dry_adiabat(
+                thermo_x, temp, pres, xfrac, grav, dz
+            )
         elif method.split("-")[0] == "neutral":
-            temp, pres, xfrac = integrate_neutral(thermo_x, temp, pres, xfrac, grav, dz);
+            temp, pres, xfrac = integrate_neutral(thermo_x, temp, pres, xfrac, grav, dz)
         else:
-            thermo_x.extrapolate_ad(temp, pres, xfrac, grav, dz);
+            thermo_x.extrapolate_ad(temp, pres, xfrac, grav, dz)
 
         if torch.any(temp < Tmin):
             i_isothermal = i + 1
@@ -276,5 +278,5 @@ def setup_profile(
         conc = thermo_x.compute("TPX->V", [temp, pres, xfrac])
         w[snapy.index.ipr, ..., i] = pres
         w[snapy.index.idn, ..., i] = thermo_x.compute("V->D", [conc])
-        w[snapy.index.icy:, ..., i] = thermo_x.compute("X->Y", [xfrac])
+        w[snapy.index.icy :, ..., i] = thermo_x.compute("X->Y", [xfrac])
     return w

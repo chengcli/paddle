@@ -7,11 +7,12 @@ import torch
 import kintera
 import snapy
 
+
 def write_profile(
     filename: str,
     hydro_w: torch.Tensor,
     block: snapy.MeshBlock,
-    ref_pressure: float = 1.e5,
+    ref_pressure: float = 1.0e5,
     comment: Optional[str] = None,
 ) -> None:
     """
@@ -46,27 +47,28 @@ def write_profile(
         raise ValueError("hydro_w must have shape (N, 1, 1, L).")
 
     # calculate a height grid
-    pres = hydro_w[snapy.index.ipr,...].squeeze() / 1.e5  # Pa -> bar
+    pres = hydro_w[snapy.index.ipr, ...].squeeze() / 1.0e5  # Pa -> bar
     zlev_func = interp1d(
         pres.log().cpu().numpy(),
         coord.buffer("x1v").cpu().numpy(),
         kind="linear",
-        fill_value="extrapolate")
-    zref = zlev_func(np.log(ref_pressure / 1.e5))
-    zlev = (coord.buffer("x1v") - zref) / 1.e3  # m -> km
+        fill_value="extrapolate",
+    )
+    zref = zlev_func(np.log(ref_pressure / 1.0e5))
+    zlev = (coord.buffer("x1v") - zref) / 1.0e3  # m -> km
 
     # calculate temperature
     temp = eos.compute("W->T", (hydro_w,)).squeeze()
 
     # calculate mole fractions
-    xfrac = thermo_y.compute("Y->X", (hydro_w[snapy.index.icy:,...],)).squeeze()
+    xfrac = thermo_y.compute("Y->X", (hydro_w[snapy.index.icy :, ...],)).squeeze()
 
     # calculate heat capacity
-    conc = thermo_x.compute("TPX->V", (temp, pres * 1.e5, xfrac))
+    conc = thermo_x.compute("TPX->V", (temp, pres * 1.0e5, xfrac))
     cpx = thermo_x.compute("TV->cp", (temp, conc)) / conc.sum(-1)
 
     # calculate entropy
-    ens = thermo_x.compute("TPV->S", (temp, pres * 1.e5, conc)) / conc.sum(-1)
+    ens = thermo_x.compute("TPV->S", (temp, pres * 1.0e5, conc)) / conc.sum(-1)
 
     with open(filename, "w") as f:
         # write comments
